@@ -1,5 +1,5 @@
 [package]
-name = "sb2_badness"
+name = "sb2_poc"
 version = "0.1.0"
 edition = "2021"
 
