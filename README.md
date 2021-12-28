@@ -1,4 +1,4 @@
-= What is this?
+# What is this?
 
 This is a POC for an issue with the SB2 parsing in the LPC55S69 version 1B ROM.
 Parts of the header are not checked carefully which allows for a buffer
@@ -27,7 +27,7 @@ general registers:
       r6: 0x00000170 (368) 
 ```
 
-= Caveats
+# Caveats
 
 This doesn't work out of the box with NXP's ISP tools. We overwrite the global
 state of the stack canary as part of our extended buffer overrun which gets
