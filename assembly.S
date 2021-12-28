@@ -9,4 +9,4 @@ fake:
 // now go to our loop
 movw r5, 0xae71
 movt r5, 0x1301
-bx r5
+blx r5

