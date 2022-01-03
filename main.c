@@ -156,7 +156,7 @@ int main() {
 	extra_bytes[GLOBAL_ADDR(0x140019c0)] = 0x8000;
 	extra_bytes[GLOBAL_ADDR(0x140019c4)] = 0x9de00;
 	extra_bytes[GLOBAL_ADDR(0x140019c8)] = 0x2200;
-	extra_bytes[GLOBAL_ADDR(0x140019cc)] = 0x20;
+	extra_bytes[GLOBAL_ADDR(0x140019cc)] = 0x200;
 	extra_bytes[GLOBAL_ADDR(0x140019d0)] = 0x1;
 	extra_bytes[GLOBAL_ADDR(0x140019d4)] = 0x1;
 	extra_bytes[GLOBAL_ADDR(0x140019d8)] = 0x30;
