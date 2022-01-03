@@ -33,6 +33,4 @@ str r0, [r1, #0x0]
 # now branch!
 movw r5, 0x5401
 movt r5, 0x1400
-#movw r5, 0xae71
-#movt r5, 0x1301
 blx r5

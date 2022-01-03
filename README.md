@@ -33,6 +33,19 @@ This doesn't work out of the box with NXP's ISP tools. We overwrite the global
 state of the stack canary as part of our extended buffer overrun which gets
 detected when the code goes back up to ISP to get another packet.
 
-The workaround is to use some custom code to send a short packet to right
-before the stack canary and make sure the stack canary is at the beginning
-of the 512 byte packet which is enough to push us over the line!
+This PoC includes a minimal implementation of the ISP protocol to get around
+this. The code sends everything up to the stack canary and then overwrites
+the canary with the last packet.
+
+# Usage
+
+`make run` will build and run everything
+
+`header.c` has the code to build the buggy header
+`serial.c` is a minimal implementation of ISP over serial
+`assembly.S` contains the payload that gets loaded to the executable area
+at `0x14005a00`
+
+# Further work
+
+Add a file to load more assembly at the specified address

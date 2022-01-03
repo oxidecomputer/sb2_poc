@@ -292,7 +292,6 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	printf("read %d\n", ret);
 	out_fd = open(argv[1], O_WRONLY | O_CREAT, 0666);
 
 	if (out_fd < 0) {
