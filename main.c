@@ -62,8 +62,13 @@ typedef struct version_t version_t;
 // This includes 6 for our header
 #define NUM_COPY_BLOCKS (6 + ((COPY_UNTIL - EXTRA_BUFFER_START) / 16))
 
-int main() {
+int main(int argc, char **argv) {
 	struct sb2_header_t header = { 0 };
+
+	if (argc < 2) {
+		printf("Usage: %s <binary out>\n", argv[0]);
+		exit(1);
+	}
 
 	//uint32_t blank[4096/4] = { 0 };
 	// This is waaaay more than we need but it gives us space
@@ -288,7 +293,7 @@ int main() {
 	}
 
 	printf("read %d\n", ret);
-	out_fd = open("/tmp/bad_header.bin", O_WRONLY | O_CREAT, 0666);
+	out_fd = open(argv[1], O_WRONLY | O_CREAT, 0666);
 
 	if (out_fd < 0) {
 		printf("failed to open %s \n", strerror(errno));
