@@ -1,7 +1,5 @@
 
-all: assembly.bin header
-
-run: header serial
+run: header serial assembly.bin
 	./generate bad_header.bin
 	./serial /dev/ttyUSB0 bad_header.bin
 
@@ -17,7 +15,8 @@ assembly.bin: assembly.S
 
 .PHONY: clean
 clean:
-	-rm generate
-	-rm assembly.o
-	-rm assembly.bin 
-	-rm serial
+	-rm -f bad_header.bin
+	-rm -f generate
+	-rm -f assembly.o
+	-rm -f assembly.bin
+	-rm -f serial
