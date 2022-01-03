@@ -374,7 +374,7 @@ int main(int argc, char **argv) {
 	// but get us just close enough to the executable area
 	send_data_packet(port, &read_buffer[0x43d0], 512, false);
 
-	printf("printf(\"now you are root\")\n");
+	printf("Device should have SWD enabled\n");
 	// and now you are root
 }
 

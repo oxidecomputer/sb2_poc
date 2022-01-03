@@ -28,6 +28,8 @@ general registers:
 pyocd> read32 0x14005400
 14005400:  e7fee7fe    |....|
 pyocd>
+pyocd> read32 0x5003b254
+5003b254:  8000aaaa    |....|
 ```
 
 # Caveats
