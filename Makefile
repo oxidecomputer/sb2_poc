@@ -1,6 +1,12 @@
 
-all: assembly.bin main.c
-	gcc -o generate main.c
+all: assembly.bin header
+
+run: header serial
+	./generate bad_header.bin
+	./serial /dev/ttyUSB0 bad_header.bin
+
+header:
+	gcc -o generate header.c
 
 serial: serial.c
 	gcc -o serial serial.c	
@@ -14,3 +20,4 @@ clean:
 	-rm generate
 	-rm assembly.o
 	-rm assembly.bin 
+	-rm serial
