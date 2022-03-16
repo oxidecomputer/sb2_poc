@@ -118,7 +118,7 @@ been reviewed for vulnerabilities. While no review is guaranteed to find
 every issue, this issue once again highlights that a single report is no
 substitute for transparency. Oxide continues to assert that open firmware is
 necessary for building a more secure system. Transparency in what we are
-building and how we are building it will allow our customers to make a
+building, and how we are building it will allow our customers to make a
 fully informed choice about what they are buying and how their system will
 work. We, once again, invite everyone to join us in making open firmware
 the industry baseline.
