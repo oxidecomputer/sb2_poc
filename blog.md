@@ -34,7 +34,7 @@ The `receive-sb-file` ISP command uses the [SB2 format](https://github.com/NXPmi
 This format includes a header followed by a series of commands. These commands
 can modify the flash or start execution of code. The commands are encrypted
 with a key programmed at manufacturing time. The signature on the update covers
-only the header but the header contains a secure digest of the command section.
+only the header, but the header contains a secure digest of the command section.
 The C representation of the first part of the header looks like the following:
 
 ```
