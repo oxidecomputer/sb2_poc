@@ -77,7 +77,7 @@ checking on the block numbers. The SB2 parser in ROM copies the header to a
 global buffer for checking the signature later. Instead of stopping when the
 size of the header has been copied, the parsing code copys up to
 `m_keyBlobBlock` number of blocks. In a correctly formatted header,
-`m_keyBlobBlock` will be right after the end of the header but the code does
+`m_keyBlobBlock` will be right after the end of the header, but the code does
 not check the bounds on this. If `m_keyBlobBlock` is set to a much larger
 number the code will continue copying bytes beyond the end of the global
 buffer, a classic buffer overflow. This part of the header is parsed before
