@@ -3,7 +3,7 @@
 Here at Oxide we continue to work on building servers as they should be. While
 working with the built in update system on the LPC55S69 (our chosen part for
 the Root of Trust) we discovered a buffer overflow. This issue exists in
-the In System Programming (ISP) code for the signed update mechanism which
+the In-System Programming (ISP) code for the signed update mechanism which
 lives in ROM. It allows an attacker to gain non-persistent code execution
 without signed code. This can be used to circumvent restrictions when the
 chip is fully locked down and also extract the device secret. Because this
