@@ -1,14 +1,14 @@
 # Wow this needs a title
 
-Here at Oxide we continue to work on building servers as they should be. While
-working with the built in update system on the LPC55S69 (our chosen part for
-the Root of Trust) we discovered a buffer overflow. This issue exists in
+Here at Oxide, we continue to work on building servers as they should be. While
+working with the built-in update system on the LPC55S69 (our chosen part for
+the Root of Trust), we discovered a buffer overflow. This issue exists in
 the In-System Programming (ISP) code for the signed update mechanism which
 lives in ROM. It allows an attacker to gain non-persistent code execution
 without signed code. This can be used to circumvent restrictions when the
 chip is fully locked down and also extract the device secret. Because this
 issue exists in ROM there is no known workaround besides not using ISP.
-This has been assigned CVE-2022-22819.
+This has been assigned [CVE-2022-22819](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-22819).
 
 ## Updates are hard
 
@@ -16,28 +16,28 @@ Before discussing the exploit, it's worth thinking about the higher level
 problem: how do you update your software on a microcontroller once it leaves
 the factory? This turns out to be at [tricky problem](https://interrupt.memfault.com/blog/device-firmware-update-cookbook)
 where a bug can result in a non-functional device. To make this problem easier,
-chip makers like NXP will provide some method to put the chip in a mode to
-allow for safe modification of flash. NXP offers this via its In-System
+chip makers like NXP will provide some method to put the chip in a mode that
+allows for safe modification of flash. NXP offers this via its In System
 Programming (ISP) mode.
 
 ISP allows a host (typically a general purpose computer) to send commands
 to the target. The LPC55S69 supports multiple protocols (UART,
-SPI, I2C, CAN on some variants) for sending commands. The [commands](https://github.com/NXPmicro/spsdk/blob/master/spsdk/mboot/commands.py)
+SPI, I2C, CAN on some variants) for sending commands. The [commands](https://github.com/NXPmicro/spsdk/blob/9caefd8b7a4183afe5d696a577b49383bac2c18d/spsdk/mboot/commands.py)
 allow for reading and writing various parts of the chip including flash.
 The LPC55S69 can be configured to require code be signed with a specific
 key. When the chip is in this configuration, most commands are restricted
-and changes to the flash can only come via the command `receive-sb-file`.
+and changes to the flash can only come via the `receive-sb-file` command.
 
 ## The update format
 
-The `receive-sb-file` ISP command uses the [SB2 format](https://github.com/NXPmicro/spsdk/tree/master/spsdk/sbfile/sb2).
+The `receive-sb-file` ISP command uses the [SB2 format](https://github.com/NXPmicro/spsdk/tree/9caefd8b7a4183afe5d696a577b49383bac2c18d/spsdk/sbfile/sb2).
 This format includes a header followed by a series of commands. These commands
 can modify the flash or start execution of code. The commands are encrypted
 with a key programmed at manufacturing time. The signature on the update covers
 only the header, but the header contains a secure digest of the command section.
 The C representation of the first part of the header looks like the following:
 
-```
+```c
     struct sb2_header_t
     {
         uint32_t nonce[4];
@@ -71,7 +71,7 @@ The C representation of the first part of the header looks like the following:
 
 ## The bug
 
-The SB2 update is parsed sequentially in 16 byte blocks. The header identifies
+The SB2 update is parsed sequentially in 16-byte blocks. The header identifies
 some parts of the update by block number. The bug comes from improper bounds
 checking on the block numbers. The SB2 parser in ROM copies the header to a
 global buffer for checking the signature later. Instead of stopping when the
@@ -96,9 +96,9 @@ allowing for derivation of keys based on the secret.
 
 ## Mitigation
 
-Because this is an issue in the ROM the best mitigation without replacing
+Because this is an issue in the ROM, the best mitigation without replacing
 the chip is to not use the SB2 format. Disabling ISP mode and not using
-flash recovery mode will avoid exposure although this does mean the
+flash recovery mode will avoid exposure, although this does mean the
 chip user must come up with alternate designs for those use cases.
 
 The NXP ROM also provides an API for applying an SB2 update directly from
