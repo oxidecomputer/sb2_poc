@@ -1,14 +1,21 @@
-# Wow this needs a title
+# Another vulnerability in the LPC55S69 ROM
 
-Here at Oxide, we continue to work on building servers as they should be. While
-working with the built-in update system on the LPC55S69 (our chosen part for
-the Root of Trust), we discovered a buffer overflow. This issue exists in
-the In-System Programming (ISP) code for the signed update mechanism which
+Here at Oxide, we continue to work on building servers as they should be.
+Last year, we discovered an [undocumented hardware block](https://oxide.computer/blog/lpc55)
+in the LPC55S69 (our chosen part for the Root of Trust) that could be used to
+violate security boundaries. This issue hilighted the importance of transparancy
+as an Oxide value. While continuing to develop our product,
+we discovered a buffer overflow in the ROM of the LPC55S69. This issue exists
+in the In-System Programming (ISP) code for the signed update mechanism which
 lives in ROM. It allows an attacker to gain non-persistent code execution
 without signed code. This can be used to circumvent restrictions when the
 chip is fully locked down and also extract the device secret. Because this
 issue exists in ROM there is no known workaround besides not using ISP.
 This has been assigned [CVE-2022-22819](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-22819).
+Finding two separate issues in the same chip only strengthens the Oxide
+assertion that keeping code proprietary does not improve product
+security and hardware manufacturers such as NXP should make their ROM source
+available for customer review.
 
 ## Updates are hard
 
