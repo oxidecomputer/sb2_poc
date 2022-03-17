@@ -14,13 +14,13 @@ This has been assigned [CVE-2022-22819](https://cve.mitre.org/cgi-bin/cvename.cg
 
 Before discussing the exploit, it's worth thinking about the higher level
 problem: how do you update your software on a microcontroller once it leaves
-the factory? This turns out to be at [tricky problem](https://interrupt.memfault.com/blog/device-firmware-update-cookbook)
+the factory? This turns out to be a [tricky problem](https://interrupt.memfault.com/blog/device-firmware-update-cookbook)
 where a bug can result in a non-functional device. To make this problem easier,
 chip makers like NXP will provide some method to put the chip in a mode that
 allows for safe modification of flash. NXP offers this via its In System
 Programming (ISP) mode.
 
-ISP allows a host (typically a general purpose computer) to send commands
+ISP mode allows a host (typically a general purpose computer) to send commands
 to the target. The LPC55S69 supports multiple protocols (UART,
 SPI, I2C, CAN on some variants) for sending commands. The [commands](https://github.com/NXPmicro/spsdk/blob/9caefd8b7a4183afe5d696a577b49383bac2c18d/spsdk/mboot/commands.py)
 allow for reading and writing various parts of the chip including flash.
@@ -75,7 +75,7 @@ The SB2 update is parsed sequentially in 16-byte blocks. The header identifies
 some parts of the update by block number. The bug comes from improper bounds
 checking on the block numbers. The SB2 parser in ROM copies the header to a
 global buffer for checking the signature later. Instead of stopping when the
-size of the header has been copied, the parsing code copys up to
+size of the header has been copied, the parsing code copies up to
 `m_keyBlobBlock` number of blocks. In a correctly formatted header,
 `m_keyBlobBlock` will be right after the end of the header, but the code does
 not check the bounds on this. If `m_keyBlobBlock` is set to a much larger
