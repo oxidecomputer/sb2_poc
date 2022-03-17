@@ -86,7 +86,7 @@ global buffer for checking the signature later. Instead of stopping when the
 size of the header has been copied (a total of 8 blocks or 128 bytes), the
 parsing code copies up to `m_keyBlobBlock` number of blocks.
 In a correctly formatted header, `m_keyBlobBlock` will be refer to the block
-number right after the header but the code does
+number right after the header, but the code does
 not check the bounds on this. If `m_keyBlobBlock` is set to a much larger
 number the code will continue copying bytes beyond the end of the global
 buffer, a classic buffer overflow. This part of the header is parsed before
