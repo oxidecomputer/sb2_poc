@@ -79,12 +79,14 @@ The C representation of the first part of the header looks like the following:
 ## The bug
 
 The SB2 update is parsed sequentially in 16-byte blocks. The header identifies
-some parts of the update by block number. The bug comes from improper bounds
+some parts of the update by block number (e.g. block 0 is at byte offset
+0, block 1 at byte offset 16 etc). The bug comes from improper bounds
 checking on the block numbers. The SB2 parser in ROM copies the header to a
 global buffer for checking the signature later. Instead of stopping when the
-size of the header has been copied, the parsing code copies up to
-`m_keyBlobBlock` number of blocks. In a correctly formatted header,
-`m_keyBlobBlock` will be right after the end of the header, but the code does
+size of the header has been copied (a total of 8 blocks or 128 bytes), the
+parsing code copies up to `m_keyBlobBlock` number of blocks.
+In a correctly formatted header, `m_keyBlobBlock` will be refer to the block
+number right after the header but the code does
 not check the bounds on this. If `m_keyBlobBlock` is set to a much larger
 number the code will continue copying bytes beyond the end of the global
 buffer, a classic buffer overflow. This part of the header is parsed before
