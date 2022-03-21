@@ -12,7 +12,7 @@ without signed code. This can be used to circumvent restrictions when the
 chip is fully locked down and also extract the device secret. Because this
 issue exists in ROM there is no known workaround besides not using ISP.
 This has been assigned [CVE-2022-22819](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-22819).
-Finding two separate issues in the same chip only strengthens the Oxide
+Finding two separate issues in the same chip only strengthens Oxide's
 assertion that keeping code proprietary does not improve product
 security and hardware manufacturers such as NXP should make their ROM source
 available for customer review.
