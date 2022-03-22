@@ -134,5 +134,5 @@ the industry baseline.
 - 2021-12-23: Oxide discloses vulnerability to NXP
 - 2022-01-03: NXP PSIRT acknowledges the report
 - 2022-01-04: NXP PSIRT acknowledges the vulnerability
-- 2022-02-28: NXP Discloses issues in a NXP Security Bulltin (NDA required) and confirms that new a ROM revision, and thus new part revisions, are required to correct the vulnerability in affected product lines.
+- 2022-02-28: NXP Discloses issues in a NXP Security Bulletin (NDA required) and confirms that a new ROM revision, and thus new part revisions, are required to correct the vulnerability in affected product lines.
 - 2022-03-23: Oxide discloses as CVE-2022-22819
