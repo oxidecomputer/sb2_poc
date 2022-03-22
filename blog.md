@@ -4,10 +4,10 @@ Here at Oxide, we continue to work on building servers as they should be.
 Last year, we discovered an [undocumented hardware block](https://oxide.computer/blog/lpc55)
 in the LPC55S69 (our chosen part for our product's Root of Trust implementation) that could be used to
 violate security boundaries. This issue hilighted the importance of transparancy
-as an Oxide value. While continuing to develop our product,
+as an Oxide value which is why we are bringing another recently discovered vulnerability to light today. While continuing to develop our product,
 we discovered a buffer overflow in the ROM of the LPC55S69. This issue exists
 in the In-System Programming (ISP) code for the signed update mechanism which
-lives in ROM. It allows an attacker to gain non-persistent code execution
+lives in ROM. This vulnerability allows an attacker to gain non-persistent code execution
 with a carefully crafted update regardless of whether the update is signed. This can be used to circumvent restrictions when the
 chip is fully locked down and also extract the device's [DICE](https://trustedcomputinggroup.org/work-groups/dice-architectures/) Unique Device Secret (UDS). Because this
 issue exists in ROM there is no known workaround other than disabling all hardware and software paths to enter ISP mode.
@@ -123,7 +123,7 @@ been reviewed for vulnerabilities. While no review is guaranteed to find
 every issue, this issue once again highlights that a single report is no
 substitute for transparency. Oxide continues to assert that open firmware is
 necessary for building a more secure system. Transparency in what we are
-building, and how we are building it will allow our customers to make a
+building and how we are building it will allow our customers to make a
 fully informed choice about what they are buying and how their system will
 work. We, once again, invite everyone to join us in making open firmware
 the industry baseline.
@@ -134,5 +134,5 @@ the industry baseline.
 - 2021-12-23: Oxide discloses vulnerability to NXP
 - 2022-01-03: NXP PSIRT acknowledges the report
 - 2022-01-04: NXP PSIRT acknowledges the vulnerability
-- 2022-02: NXP Discloses issues in security notice (NDA required)
+- 2022-02-28: NXP Discloses issues in a NXP Security Bulltin (NDA required) and confirms that new a ROM revision, and thus new part revisions, are required to correct the vulnerability in affected product lines.
 - 2022-03-23: Oxide discloses as CVE-2022-22819
