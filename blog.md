@@ -3,7 +3,7 @@
 Here at Oxide, we continue to work on building servers as they should be.
 Last year, we discovered an [undocumented hardware block](https://oxide.computer/blog/lpc55)
 in the LPC55S69 (our chosen part for our product's Root of Trust implementation) that could be used to
-violate security boundaries. This issue hilighted the importance of transparancy
+violate security boundaries. This issue highlighted the importance of transparency
 as an Oxide value which is why we are bringing another recently discovered vulnerability to light today. While continuing to develop our product,
 we discovered a buffer overflow in the ROM of the LPC55S69. This issue exists
 in the In-System Programming (ISP) code for the signed update mechanism which
@@ -35,7 +35,11 @@ and changes to the flash can only come via the `receive-sb-file` command.
 ## The update format
 
 The `receive-sb-file` ISP command uses the [SB2 format](https://github.com/NXPmicro/spsdk/tree/9caefd8b7a4183afe5d696a577b49383bac2c18d/spsdk/sbfile/sb2).
-This format includes a header followed by a series of commands which can modify the flash or start code execution. Confidentiality and integrity of an update is provided by encrypting the commands with a key programmed at manufacturing time, inserting a secure digest of the commands in the update header, and finally signing the header.
+This format includes a header followed by a series of commands which can modify
+the flash or start code execution. Confidentiality and integrity of an update
+are provided by encrypting the commands with a key programmed at manufacturing
+time, inserting a secure digest of the commands in the update header, and
+finally signing the header.
 The C representation of the first part of the header looks like the following:
 
 ```c
@@ -79,7 +83,7 @@ checking on the block numbers. The SB2 parser in ROM copies the header to a
 global buffer before checking the signature. Instead of stopping when the
 size of the header has been copied (a total of 8 blocks or 128 bytes), the
 parsing code copies up to `m_keyBlobBlock` number of blocks.
-In a correctly formatted header, `m_keyBlobBlock` will be refer to the block
+In a correctly formatted header, `m_keyBlobBlock` will refer to the block
 number right after the header, but the code does
 not check the bounds on this. If `m_keyBlobBlock` is set to a much larger
 number the code will continue copying bytes beyond the end of the global
